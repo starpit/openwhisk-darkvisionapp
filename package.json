@@ -1,5 +1,6 @@
 {
-  "name": "openwhisk-darkvisionapp",
+  "name": "Dark-Vision",
+  "description": "Dark Vision is an application that processes videos to discover what's inside of them. By analyzing individual frames and audio from videos with **IBM Watson Visual Recognition** and **Natural Language Understanding**, Dark Vision builds a summary with a set of tags, famous people or landmarks detected in the video.",
   "version": "1.0.0",
   "scripts": {},
   "dependencies": {
@@ -16,7 +17,9 @@
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "2.2.3",
     "eslint-plugin-promise": "3.3.2",
-    "eslint-plugin-react": "6.6.0"
+    "eslint-plugin-react": "6.6.0",
+    "modk": "git+ssh://git@github.ibm.com:nickm/modk.git",
+    "cloudant": "git+ssh://git@github.ibm.com:nickm/cloudant.git"
   },
   "author": "IBM",
   "license": "Apache-2.0",

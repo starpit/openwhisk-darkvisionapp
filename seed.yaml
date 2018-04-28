@@ -1,0 +1,109 @@
+apiVersion: seed.ibm.com/v1
+kind: CloudService
+metadata:
+  name: visualrecognition-for-darkvision
+  prettyName: Watson Visual Recognition
+spec:
+  service: watson_vision_combined
+  plan: free
+
+---
+apiVersion: seed.ibm.com/v1
+kind: CloudService
+metadata:
+  name: speechtotext-for-darkvision
+  prettyName: Watson Speech to Text
+spec:
+  service: speech_to_text
+  plan: standard
+
+---
+apiVersion: seed.ibm.com/v1
+kind: CloudService
+metadata:
+  name: nlu-for-darkvision
+  prettyName: Watson Natural Language Understanding
+spec:
+  service: natural-language-understanding
+  plan: free
+
+---
+apiVersion: seed.ibm.com/v1
+kind: Function
+metadata:
+  name: speechtotext
+spec:
+  packages:
+  - name: vision
+    actions:
+      - codeUri: https://raw.githubusercontent.com/IBM-Cloud/openwhisk-darkvisionapp/master/processing/speechtotext/speechtotext.js
+        runtime: "nodejs:default"
+        annotations:
+          - name: web-export
+            value: "true"
+          - name: final
+            value: "true"
+
+---
+apiVersion: seed.ibm.com/v1
+kind: Function
+metadata:
+  name: vision
+spec:
+  packages:
+  - name: vision
+    parameters:
+      - name: CLOUDANT_db
+        value: openwhisk-darkvision
+      - name: STT_CREDENTIALS
+        valueFrom:
+          secretKeyRef:
+            name: binding-speechtotext-for-darkvision
+            key: binding        
+      - name: NLU_CREDENTIALS
+        valueFrom:
+          secretKeyRef:
+            name: binding-nlu-for-darkvision
+            key: binding        
+      - name: VISUAL_CREDENTIALS
+        valueFrom:
+          secretKeyRef:
+            name: binding-visualrecognition-for-darkvision
+            key: binding        
+      - name: CLOUDANT_CREDENTIALS
+        valueFrom:
+          secretKeyRef:
+            name: binding-cloudant-for-darkvision
+            key: binding
+
+---
+apiVersion: seed.ibm.com/v1
+kind: Function
+metadata:
+  name: cloudant-feed
+spec:
+  packages:
+  - name: default
+    triggers:
+    - name: cloudant-trigger
+      feed: cloudant/changes
+      parameters:
+      - name: dbname
+        value: openwhisk-darkvision
+
+    rules:
+    - name: cloudant-changelistener-rule
+      action: /_/cloudant-changelistener
+      trigger: /_/cloudant-trigger
+
+---
+apiVersion: seed.ibm.com/v1
+kind: Function
+metadata:
+  name: extractor
+spec:
+  packages:
+  - name: l2fprod
+    actions:
+    - name: darkvision-extractor-master
+      docker: l2fprod/darkvision-extractor-master
